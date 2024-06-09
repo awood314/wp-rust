@@ -1,5 +1,7 @@
 #include <juce_core/juce_core.h>
 
+#include "generated/lib.rs.h"
+
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
 
@@ -119,6 +121,7 @@ bool WPRustProcessor::isBusesLayoutSupported(const BusesLayout& layouts) const
 
 void WPRustProcessor::processBlock(juce::AudioBuffer<float>&, juce::MidiBuffer&)
 {
+    test(8);
 }
 
 //==============================================================================

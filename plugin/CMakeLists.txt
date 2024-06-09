@@ -29,7 +29,7 @@ set(TARGET_SOURCES
     src/PluginEditor.cpp
     src/PluginEditor.h)
 
-target_sources(${PROJECT_NAME} PRIVATE ${TARGET_SOURCES})
+set(INCLUDE_DIRS)
 
 set(COMPILE_DEFINITIONS
     JUCE_USE_CURL=0
@@ -38,14 +38,37 @@ set(COMPILE_DEFINITIONS
     JUCE_DISPLAY_SPLASH_SCREEN=0
     JUCE_VST3_CAN_REPLACE_VST2=0)
 
-target_compile_definitions(${PROJECT_NAME} PRIVATE ${COMPILE_DEFINITIONS})
-
 set(LINK_LIBRARIES
     juce::juce_audio_formats
     juce::juce_audio_plugin_client
     juce::juce_audio_utils
     juce::juce_gui_basics)
 
+################
+# Rust lib build
+################
+set(RUST_PROJECT_DIR "${CMAKE_SOURCE_DIR}/../rust")
+set(RUST_CODEGEN_HEADERS "${CMAKE_SOURCE_DIR}/src/generated")
+
+file(MAKE_DIRECTORY ${RUST_CODEGEN_HEADERS})
+
+add_custom_command(
+    OUTPUT ${RUST_CODEGEN_HEADERS}/lib.rs.h
+    COMMAND cargo build
+    COMMAND ${CMAKE_COMMAND} -E copy ${RUST_PROJECT_DIR}/target/cxxbridge/wp-rust/src/lib.rs.* ${RUST_CODEGEN_HEADERS}
+    WORKING_DIRECTORY ${RUST_PROJECT_DIR}
+    COMMENT "Building Rust project and copying headers..."
+)
+
+list(APPEND INCLUDE_DIRS ${RUST_CODEGEN_HEADERS})
+
+find_library(RUST_LIB wp_rust PATHS ${RUST_PROJECT_DIR}/target/debug)
+list(APPEND LINK_LIBRARIES ${RUST_LIB} dl pthread)
+################
+
+target_compile_definitions(${PROJECT_NAME} PRIVATE ${COMPILE_DEFINITIONS})
+target_sources(${PROJECT_NAME} PRIVATE ${TARGET_SOURCES})
+include_directories(${INCLUDE_DIRS})
 target_link_libraries(${PROJECT_NAME} PRIVATE ${LINK_LIBRARIES})
 
 if(MSVC)
