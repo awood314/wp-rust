@@ -49,20 +49,21 @@ set(LINK_LIBRARIES
 ################
 set(RUST_PROJECT_DIR "${CMAKE_SOURCE_DIR}/../rust")
 set(RUST_CODEGEN_HEADERS "${CMAKE_SOURCE_DIR}/src/generated")
+set(RUST_LIB "${RUST_PROJECT_DIR}/target/debug/libwp_rust.a")
 
 file(MAKE_DIRECTORY ${RUST_CODEGEN_HEADERS})
 
 add_custom_command(
-    OUTPUT ${RUST_CODEGEN_HEADERS}/lib.rs.h
+    OUTPUT ${RUST_LIB}
     COMMAND cargo build
     COMMAND ${CMAKE_COMMAND} -E copy ${RUST_PROJECT_DIR}/target/cxxbridge/wp-rust/src/lib.rs.* ${RUST_CODEGEN_HEADERS}
     WORKING_DIRECTORY ${RUST_PROJECT_DIR}
     COMMENT "Building Rust project and copying headers..."
 )
+add_custom_target(build_rust_lib DEPENDS ${RUST_LIB})
+add_dependencies(${PROJECT_NAME} build_rust_lib)
 
 list(APPEND INCLUDE_DIRS ${RUST_CODEGEN_HEADERS})
-
-find_library(RUST_LIB wp_rust PATHS ${RUST_PROJECT_DIR}/target/debug)
 list(APPEND LINK_LIBRARIES ${RUST_LIB} dl pthread)
 ################
 
