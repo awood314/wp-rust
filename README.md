@@ -1,6 +1,6 @@
 # Will Pirkle (Audio Effects written in) Rust
 
-Implementations of audio effects from [Will Pirkle - Designing Audio Effect Plugins in C++](https://www.willpirkle.com/), in Rust 🦀
+Rust 🦀 implementations of audio effects from [Will Pirkle - Designing Audio Effect Plugins in C++](https://www.willpirkle.com/)
 
 ## Building the VST3/AU Plugin
 
