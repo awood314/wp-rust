@@ -52,12 +52,14 @@ set(RUST_CODEGEN_HEADERS "${CMAKE_SOURCE_DIR}/src/generated")
 set(RUST_LIB "${RUST_PROJECT_DIR}/target/debug/libwp_rust.a")
 
 file(MAKE_DIRECTORY ${RUST_CODEGEN_HEADERS})
+file(GLOB_RECURSE RUST_SOURCES "${RUST_PROJECT_DIR}/src/*.rs")
 
 add_custom_command(
     OUTPUT ${RUST_LIB}
     COMMAND cargo build
     COMMAND ${CMAKE_COMMAND} -E copy ${RUST_PROJECT_DIR}/target/cxxbridge/wp-rust/src/lib.rs.* ${RUST_CODEGEN_HEADERS}
     WORKING_DIRECTORY ${RUST_PROJECT_DIR}
+    DEPENDS ${RUST_SOURCES}
     COMMENT "Building Rust project and copying headers..."
 )
 add_custom_target(build_rust_lib DEPENDS ${RUST_LIB})
