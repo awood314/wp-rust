@@ -8,10 +8,6 @@ mod ffi {
         a2: f64,
         b1: f64,
         b2: f64,
-
-        // wet/dry
-        c0: f64,
-        d0: f64,
     }
 
     struct Biquad {
@@ -80,10 +76,6 @@ impl ffi::Biquad {
 }
 
 fn set_parameters(filter: &mut ffi::AudioFilter, params: ffi::AudioFilterParameters) {
-    // pass-through
-    filter.biquad.coeffs.c0 = 1.0;
-    filter.biquad.coeffs.d0 = 0.0;
-
     // set parameters
     filter.params = params;
 
@@ -105,5 +97,5 @@ fn reset(filter: &mut ffi::AudioFilter, sample_rate: f64) {
 }
 
 fn process(filter: &mut ffi::AudioFilter, xn: f64) -> f64 {
-    filter.biquad.coeffs.d0 * xn + filter.biquad.coeffs.c0 * filter.biquad.process(xn)
+    filter.biquad.process(xn)
 }
