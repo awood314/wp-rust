@@ -41,10 +41,10 @@ public:
   void getStateInformation(juce::MemoryBlock &destData) override;
   void setStateInformation(const void *data, int sizeInBytes) override;
 
-private:
-  juce::AudioParameterFloat _frequencyParam{
+  juce::AudioParameterFloat frequencyParam{
       "frequency", "Frequency", {20.f, 20480.f}, 1000.f};
 
+private:
   rust::AudioFilter _filters[2];
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WPRustProcessor)

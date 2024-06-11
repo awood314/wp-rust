@@ -102,9 +102,11 @@ bool WPRustProcessor::isBusesLayoutSupported(const BusesLayout &layouts) const {
 
 void WPRustProcessor::processBlock(juce::AudioBuffer<float> &audioBuffer,
                                    juce::MidiBuffer &) {
+  juce::ScopedNoDenormals noDenormals;
+
   // set parameters
-  rust::set_parameters(_filters[0], {.frequency = _frequencyParam.get()});
-  rust::set_parameters(_filters[1], {.frequency = _frequencyParam.get()});
+  rust::set_parameters(_filters[0], {.frequency = frequencyParam.get()});
+  rust::set_parameters(_filters[1], {.frequency = frequencyParam.get()});
 
   // process
   for (int i = 0; i < audioBuffer.getNumChannels(); i++) {

@@ -5,22 +5,23 @@
 
 #include "PluginProcessor.h"
 
-namespace wprust
-{
+namespace wprust {
 
-class WPRustProcessorEditor : public juce::AudioProcessorEditor
-{
+class WPRustProcessorEditor : public juce::AudioProcessorEditor {
 public:
-    WPRustProcessorEditor(WPRustProcessor&);
-    ~WPRustProcessorEditor() override;
+  WPRustProcessorEditor(WPRustProcessor &);
+  ~WPRustProcessorEditor() override;
 
-    void paint(juce::Graphics&) override;
-    void resized() override;
+  void paint(juce::Graphics &) override;
+  void resized() override;
 
 private:
-    WPRustProcessor& audioProcessor() const;
+  WPRustProcessor &audioProcessor() const;
 
-    JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WPRustProcessorEditor)
+  juce::Slider _frequencyKnob;
+  juce::SliderParameterAttachment _frequencyAttachment;
+
+  JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WPRustProcessorEditor)
 };
 
 } // namespace wprust
