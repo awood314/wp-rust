@@ -2,7 +2,7 @@
 
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
-#include "lib.rs.h"
+#include "iir_filter.rs.h"
 
 namespace wprust {
 
@@ -66,8 +66,8 @@ const juce::String WPRustProcessor::getProgramName(int) { return {}; }
 void WPRustProcessor::changeProgramName(int, const juce::String &) {}
 
 void WPRustProcessor::prepareToPlay(double sampleRate, int) {
-  rust::reset(_filters[0], sampleRate);
-  rust::reset(_filters[1], sampleRate);
+  rust::iir::reset(_filters[0], sampleRate);
+  rust::iir::reset(_filters[1], sampleRate);
 }
 
 void WPRustProcessor::releaseResources() {
@@ -105,8 +105,8 @@ void WPRustProcessor::processBlock(juce::AudioBuffer<float> &audioBuffer,
   juce::ScopedNoDenormals noDenormals;
 
   // set parameters
-  rust::set_parameters(_filters[0], {.frequency = frequencyParam.get()});
-  rust::set_parameters(_filters[1], {.frequency = frequencyParam.get()});
+  rust::iir::set_parameters(_filters[0], {.frequency = frequencyParam.get()});
+  rust::iir::set_parameters(_filters[1], {.frequency = frequencyParam.get()});
 
   // process
   for (int i = 0; i < audioBuffer.getNumChannels(); i++) {
@@ -114,7 +114,7 @@ void WPRustProcessor::processBlock(juce::AudioBuffer<float> &audioBuffer,
       const auto &channelRead = audioBuffer.getReadPointer(i);
       const auto &channelWrite = audioBuffer.getWritePointer(i);
       for (int j = 0; j < audioBuffer.getNumSamples(); j++) {
-        channelWrite[j] = rust::process(_filters[i], channelRead[j]);
+        channelWrite[j] = rust::iir::process(_filters[i], channelRead[j]);
       }
     }
   }
