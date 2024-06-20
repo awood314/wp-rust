@@ -1,7 +1,9 @@
-use std::f64::consts::PI;
+use crate::delay::Delay;
+use crate::lfo::LFO;
 
 #[cxx::bridge(namespace = "wprust::rust::mod")]
 mod ffi {
+    #[derive(Default)]
     struct ModulatedDelayParameters {
         rate: f64,
         depth: f64,
@@ -11,100 +13,63 @@ mod ffi {
     extern "Rust" {
         type ModulatedDelay;
 
-        fn reset(filter: &mut ModulatedDelay, sample_rate: f64);
+        fn create_modulated_delay() -> Box<ModulatedDelay>;
 
-        fn set_parameters(filter: &mut ModulatedDelay, params: ModulatedDelayParameters);
+        fn reset(self: &mut ModulatedDelay, sample_rate: f64);
 
-        fn process(filter: &mut ModulatedDelay, xn: f64) -> f64;
+        fn set_parameters(self: &mut ModulatedDelay, params: ModulatedDelayParameters);
+
+        fn process(self: &mut ModulatedDelay, xn: f64) -> f64;
     }
 }
 
-struct CircularBuffer<T: Copy + Default> {
-    buffer: Vec<T>,
-    write_index: usize,
-    length: usize,
-    mask: usize,
+fn bipolar_to_unipolar(value: f64) -> f64 {
+    0.5 * value + 0.5
 }
 
-impl<T: Copy + Default> CircularBuffer<T> {
-    fn create(&mut self, length: usize) {
-        self.write_index = 0;
-
-        // nearest power of 2
-        self.length = length.ilog2().div_ceil(2_u32.ilog2()).pow(2) as usize;
-
-        self.mask = self.length - 1;
-        self.buffer.resize(self.length, Default::default());
-    }
-
-    fn read_buffer(&mut self, delay: usize) -> T {
-        let read_index = (self.write_index - delay) & self.mask;
-        self.buffer[read_index]
-    }
-
-    fn write_buffer(&mut self, input: T) {
-        self.buffer[self.write_index] = input;
-        self.write_index = (self.write_index + 1) & self.mask;
-    }
-
-    // TODO: linear interpolation read
+fn bipolar_modulation_from_min(value: f64, min: f64, max: f64) -> f64 {
+    let value = value.clamp(-1.0, 1.0);
+    let half = (max - min) / 2.0;
+    let mid = half + min;
+    value * half + mid
 }
 
-struct AudioDelay {
-    buffer_l: CircularBuffer<f64>,
-}
-
-struct LFO {
-    frequency: f64,
-    counter: f64,
-    phase_inc: f64,
-    sample_rate: f64,
-}
-
-fn parabolic_sin(x: f64) -> f64 {
-    const B: f64 = 4.0 / PI;
-    const C: f64 = -4.0 / (PI * PI);
-    const P: f64 = 0.225;
-
-    let y = B * x + C * x * x.abs();
-    P * (y * y.abs() - y) + y
-}
-
-impl LFO {
-    fn reset(&mut self, sample_rate: f64) {
-        self.sample_rate = sample_rate;
-        self.phase_inc = self.frequency / sample_rate;
-        self.counter = 0.0;
-    }
-
-    fn render(&mut self) -> f64 {
-        // Sin wave
-        let angle = self.counter * 2.0 * PI - PI;
-
-        // increment counter and wrap
-        self.counter += self.phase_inc;
-        self.counter = match self.counter {
-            counter if counter >= 1.0 => counter - 1.0,
-            counter if counter <= 0.0 => counter + 1.0,
-            _ => self.counter,
-        };
-
-        parabolic_sin(-angle)
-    }
-}
-
+#[derive(Default)]
 struct ModulatedDelay {
     params: ffi::ModulatedDelayParameters,
     lfo: LFO,
-    delay: AudioDelay,
+    delay: Delay,
 }
 
-impl ModulatedDelay {}
+fn create_modulated_delay() -> Box<ModulatedDelay> {
+    Box::new(ModulatedDelay::default())
+}
 
-fn reset(_filter: &mut ModulatedDelay, _sample_rate: f64) {}
+impl ModulatedDelay {
+    fn reset(self: &mut ModulatedDelay, sample_rate: f64) {
+        self.delay.reset(sample_rate);
 
-fn set_parameters(_filter: &mut ModulatedDelay, _params: ffi::ModulatedDelayParameters) {}
+        self.delay.create_delay_buffer(sample_rate, 100.0);
 
-fn process(_filter: &mut ModulatedDelay, _xn: f64) -> f64 {
-    0.0
+        self.lfo.reset(sample_rate);
+    }
+
+    fn set_parameters(self: &mut ModulatedDelay, params: ffi::ModulatedDelayParameters) {
+        self.params = params;
+        self.lfo.frequency = self.params.rate;
+        self.delay.feedback = self.params.feedback;
+    }
+
+    fn process(self: &mut ModulatedDelay, xn: f64) -> f64 {
+        // next lfo
+        let lfo_signal = self.lfo.render();
+
+        // flanger
+        let min_delay = 0.1;
+        let max_depth = 7.0;
+        let depth = self.params.depth / 100.0;
+        let mod_value = bipolar_to_unipolar(depth * lfo_signal);
+        self.delay.delay = bipolar_modulation_from_min(mod_value, min_delay, min_delay + max_depth);
+        self.delay.process(xn)
+    }
 }
