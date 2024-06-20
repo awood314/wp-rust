@@ -47,29 +47,30 @@ fn create_modulated_delay() -> Box<ModulatedDelay> {
 
 impl ModulatedDelay {
     fn reset(self: &mut ModulatedDelay, sample_rate: f64) {
-        self.delay.reset(sample_rate);
+        // self.delay.reset(sample_rate);
 
-        self.delay.create_delay_buffer(sample_rate, 100.0);
+        // self.delay.create_delay_buffer(sample_rate, 100.0);
 
-        self.lfo.reset(sample_rate);
+        // self.lfo.reset(sample_rate);
     }
 
     fn set_parameters(self: &mut ModulatedDelay, params: ffi::ModulatedDelayParameters) {
-        self.params = params;
-        self.lfo.frequency = self.params.rate;
-        self.delay.feedback = self.params.feedback;
+        // self.params = params;
+        // self.lfo.frequency = self.params.rate;
+        // self.delay.feedback = self.params.feedback;
     }
 
     fn process(self: &mut ModulatedDelay, xn: f64) -> f64 {
         // next lfo
-        let lfo_signal = self.lfo.render();
+        // let lfo_signal = self.lfo.render();
 
         // flanger
-        let min_delay = 0.1;
-        let max_depth = 7.0;
-        let depth = self.params.depth / 100.0;
-        let mod_value = bipolar_to_unipolar(depth * lfo_signal);
-        self.delay.delay = bipolar_modulation_from_min(mod_value, min_delay, min_delay + max_depth);
-        self.delay.process(xn)
+        // let min_delay = 0.1;
+        // let max_depth = 7.0;
+        // let depth = self.params.depth / 100.0;
+        // let mod_value = bipolar_to_unipolar(depth * lfo_signal);
+        // self.delay.delay = bipolar_modulation_from_min(mod_value, min_delay, min_delay + max_depth);
+        // self.delay.process(xn)
+        0.0
     }
 }

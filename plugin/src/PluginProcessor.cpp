@@ -66,8 +66,11 @@ const juce::String WPRustProcessor::getProgramName(int) { return {}; }
 void WPRustProcessor::changeProgramName(int, const juce::String &) {}
 
 void WPRustProcessor::prepareToPlay(double sampleRate, int) {
-  rust::iir::reset(_filters[0], sampleRate);
-  rust::iir::reset(_filters[1], sampleRate);
+  // rust::iir::reset(_filters[0], sampleRate);
+  // rust::iir::reset(_filters[1], sampleRate);
+
+  _modDelay[0].into_raw()->reset(sampleRate);
+  _modDelay[1].into_raw()->reset(sampleRate);
 }
 
 void WPRustProcessor::releaseResources() {
@@ -104,17 +107,18 @@ void WPRustProcessor::processBlock(juce::AudioBuffer<float> &audioBuffer,
                                    juce::MidiBuffer &) {
   juce::ScopedNoDenormals noDenormals;
 
-  // set parameters
-  rust::iir::set_parameters(_filters[0], {.frequency = frequencyParam.get()});
-  rust::iir::set_parameters(_filters[1], {.frequency = frequencyParam.get()});
-
   // process
   for (int i = 0; i < audioBuffer.getNumChannels(); i++) {
     if (i < 2) {
+      // set parameters
+      _modDelay[i]->set_parameters({.depth = depthParam.get(),
+                                    .feedback = feedbackParam.get(),
+                                    .rate = rateParam.get()});
+
       const auto &channelRead = audioBuffer.getReadPointer(i);
       const auto &channelWrite = audioBuffer.getWritePointer(i);
       for (int j = 0; j < audioBuffer.getNumSamples(); j++) {
-        channelWrite[j] = rust::iir::process(_filters[i], channelRead[j]);
+        channelWrite[j] = _modDelay->into_raw()->process(channelRead[j]);
       }
     }
   }

@@ -2,6 +2,7 @@
 
 #pragma GCC diagnostic ignored "-Wdollar-in-identifier-extension"
 #include "iir_filter.rs.h"
+#include "mod_delay.rs.h"
 
 #include <juce_audio_basics/juce_audio_basics.h>
 #include <juce_audio_processors/juce_audio_processors.h>
@@ -44,8 +45,15 @@ public:
   juce::AudioParameterFloat frequencyParam{
       "frequency", "Frequency", {20.f, 20480.f}, 1000.f};
 
+  juce::AudioParameterFloat rateParam{"rate", "Rate", {0.02f, 20.f}, 0.2f};
+  juce::AudioParameterFloat depthParam{"depth", "Depth", {0, 100}, 50};
+  juce::AudioParameterFloat feedbackParam{"feedback", "Feedback", {0, 100}, 50};
+
 private:
   rust::iir::AudioFilter _filters[2];
+
+  ::rust::Box<rust::mod::ModulatedDelay> _modDelay[2] = {
+      rust::mod::create_modulated_delay(), rust::mod::create_modulated_delay()};
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WPRustProcessor)
 };
