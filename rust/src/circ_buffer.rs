@@ -13,12 +13,12 @@ impl<T: Copy + Default> CircularBuffer<T> {
         // nearest power of 2
         self.length = length.ilog2().div_ceil(2_u32.ilog2()).pow(2) as usize;
 
-        self.mask = self.length - 1;
+        self.mask = self.length.wrapping_sub(1);
         self.buffer.resize(self.length, Default::default());
     }
 
     pub fn read_buffer(&self, delay: usize) -> T {
-        let read_index = (self.write_index - delay) & self.mask;
+        let read_index = (self.write_index.wrapping_sub(delay)) & self.mask;
         self.buffer[read_index]
     }
 
@@ -29,6 +29,6 @@ impl<T: Copy + Default> CircularBuffer<T> {
 
     pub fn write_buffer(&mut self, input: T) {
         self.buffer[self.write_index] = input;
-        self.write_index = (self.write_index + 1) & self.mask;
+        self.write_index = (self.write_index.wrapping_add(1)) & self.mask;
     }
 }

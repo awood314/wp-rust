@@ -56,7 +56,7 @@ file(GLOB_RECURSE RUST_SOURCES "${RUST_PROJECT_DIR}/src/*.rs")
 
 add_custom_command(
     OUTPUT ${RUST_LIB}
-    COMMAND cargo build
+    COMMAND $ENV{HOME}/.cargo/bin/cargo build
     COMMAND ${CMAKE_COMMAND} -E copy_directory ${RUST_PROJECT_DIR}/target/cxxbridge/wp-rust/src ${RUST_CODEGEN_HEADERS}
     WORKING_DIRECTORY ${RUST_PROJECT_DIR}
     DEPENDS ${RUST_SOURCES}

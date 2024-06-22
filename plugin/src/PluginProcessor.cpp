@@ -69,8 +69,8 @@ void WPRustProcessor::prepareToPlay(double sampleRate, int) {
   // rust::iir::reset(_filters[0], sampleRate);
   // rust::iir::reset(_filters[1], sampleRate);
 
-  _modDelay[0].into_raw()->reset(sampleRate);
-  _modDelay[1].into_raw()->reset(sampleRate);
+  _modDelay[0]->reset(sampleRate);
+  _modDelay[1]->reset(sampleRate);
 }
 
 void WPRustProcessor::releaseResources() {
@@ -118,7 +118,7 @@ void WPRustProcessor::processBlock(juce::AudioBuffer<float> &audioBuffer,
       const auto &channelRead = audioBuffer.getReadPointer(i);
       const auto &channelWrite = audioBuffer.getWritePointer(i);
       for (int j = 0; j < audioBuffer.getNumSamples(); j++) {
-        channelWrite[j] = _modDelay->into_raw()->process(channelRead[j]);
+        channelWrite[j] = _modDelay[i]->process(channelRead[j]);
       }
     }
   }

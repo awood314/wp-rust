@@ -52,7 +52,7 @@ public:
 private:
   rust::iir::AudioFilter _filters[2];
 
-  ::rust::Box<rust::mod::ModulatedDelay> _modDelay[2] = {
+  rust::mod::ModulatedDelay *_modDelay[2] = {
       rust::mod::create_modulated_delay(), rust::mod::create_modulated_delay()};
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WPRustProcessor)

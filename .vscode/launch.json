@@ -20,6 +20,12 @@
         },
         {
             "type": "lldb",
+            "name": "Debug rust in Reaper",
+            "request": "launch",
+            "program": "/Applications/REAPER.app/Contents/MacOS/REAPER", 
+        },
+        {
+            "type": "lldb",
             "request": "launch",
             "name": "Debug unit tests in executable 'wp-rust'",
             "cargo": {
