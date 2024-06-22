@@ -1,12 +1,16 @@
+use num_traits::Float;
+
+use crate::util::linear_interpolation;
+
 #[derive(Default)]
-pub struct CircularBuffer<T: Copy + Default> {
+pub struct CircularBuffer<T: Float> {
     buffer: Vec<T>,
     write_index: usize,
     length: usize,
     mask: usize,
 }
 
-impl<T: Copy + Default> CircularBuffer<T> {
+impl<T: Float> CircularBuffer<T> {
     pub fn create(&mut self, length: usize) {
         self.write_index = 0;
 
@@ -14,7 +18,7 @@ impl<T: Copy + Default> CircularBuffer<T> {
         self.length = length.ilog2().div_ceil(2_u32.ilog2()).pow(2) as usize;
 
         self.mask = self.length.wrapping_sub(1);
-        self.buffer.resize(self.length, Default::default());
+        self.buffer.resize(self.length, T::from(0.0).unwrap());
     }
 
     pub fn read_buffer(&self, delay: usize) -> T {
@@ -22,9 +26,14 @@ impl<T: Copy + Default> CircularBuffer<T> {
         self.buffer[read_index]
     }
 
-    // TODO: interpolation
     pub fn read_buffer_fractional(&self, delay: f64) -> T {
-        self.read_buffer(delay as usize)
+        let truncated_delay = delay as usize;
+        let fraction = delay - truncated_delay as f64;
+        linear_interpolation(
+            self.read_buffer(truncated_delay),
+            self.read_buffer(truncated_delay + 1),
+            T::from(fraction).unwrap(),
+        )
     }
 
     pub fn write_buffer(&mut self, input: T) {

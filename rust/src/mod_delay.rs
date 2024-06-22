@@ -1,12 +1,13 @@
 use crate::delay::Delay;
 use crate::lfo::LFO;
+use crate::util::{self, db_to_scalar};
 
 #[cxx::bridge(namespace = "wprust::rust::mod")]
 mod ffi {
     #[derive(Default)]
     struct ModulatedDelayParameters {
         rate: f64,
-        depth: f64,
+        depth_pct: f64,
         feedback: f64,
     }
 
@@ -23,20 +24,10 @@ mod ffi {
     }
 }
 
-fn bipolar_to_unipolar(value: f64) -> f64 {
-    0.5 * value + 0.5
-}
-
-fn bipolar_modulation_from_min(value: f64, min: f64, max: f64) -> f64 {
-    let value = value.clamp(-1.0, 1.0);
-    let half = (max - min) / 2.0;
-    let mid = half + min;
-    value * half + mid
-}
-
 #[derive(Default)]
 struct ModulatedDelay {
-    params: ffi::ModulatedDelayParameters,
+    sample_rate: f64,
+    depth: f64,
     lfo: LFO,
     delay: Delay,
 }
@@ -47,17 +38,21 @@ fn create_modulated_delay() -> *mut ModulatedDelay {
 
 impl ModulatedDelay {
     fn reset(self: &mut ModulatedDelay, sample_rate: f64) {
-        self.delay.reset(sample_rate);
-
         self.delay.create_delay_buffer(sample_rate, 100.0);
 
         self.lfo.reset(sample_rate);
+
+        self.sample_rate = sample_rate;
     }
 
     fn set_parameters(self: &mut ModulatedDelay, params: ffi::ModulatedDelayParameters) {
-        self.params = params;
-        self.lfo.frequency = self.params.rate;
-        self.delay.feedback = self.params.feedback;
+        self.depth = params.depth_pct / 100.0;
+        self.lfo.frequency(params.rate);
+        self.delay.feedback = params.feedback / 100.0;
+
+        // flanger
+        self.delay.wet = db_to_scalar(-3.0);
+        self.delay.dry = db_to_scalar(-3.0);
     }
 
     fn process(self: &mut ModulatedDelay, xn: f64) -> f64 {
@@ -65,11 +60,13 @@ impl ModulatedDelay {
         let lfo_signal = self.lfo.render();
 
         // flanger
-        let min_delay = 0.1;
-        let max_depth = 7.0;
-        let depth = self.params.depth / 100.0;
-        let mod_value = bipolar_to_unipolar(depth * lfo_signal);
-        self.delay.delay = bipolar_modulation_from_min(mod_value, min_delay, min_delay + max_depth);
+        let mod_value = util::bipolar_to_unipolar(self.depth * lfo_signal);
+        const MIN_DELAY: f64 = 0.1;
+        const MAX_DEPTH: f64 = 7.0;
+        let delay_ms =
+            util::bipolar_modulation_from_min(mod_value, MIN_DELAY, MIN_DELAY + MAX_DEPTH);
+        self.delay.delay = (delay_ms / 1000.0) * self.sample_rate;
+
         self.delay.process(xn)
     }
 }

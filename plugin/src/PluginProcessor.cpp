@@ -111,7 +111,7 @@ void WPRustProcessor::processBlock(juce::AudioBuffer<float> &audioBuffer,
   for (int i = 0; i < audioBuffer.getNumChannels(); i++) {
     if (i < 2) {
       // set parameters
-      _modDelay[i]->set_parameters({.depth = depthParam.get(),
+      _modDelay[i]->set_parameters({.depth_pct = depthParam.get(),
                                     .feedback = feedbackParam.get(),
                                     .rate = rateParam.get()});
 
