@@ -120,16 +120,19 @@ void WPRustProcessor::processBlock(juce::AudioBuffer<float> &audioBuffer,
       const auto &channelRead = audioBuffer.getReadPointer(i);
       const auto &channelWrite = audioBuffer.getWritePointer(i);
       for (int j = 0; j < audioBuffer.getNumSamples(); j++) {
+        auto xn = channelRead[j];
+
         // Waveshaper
-        auto xn = rust::waveshaper::process(channelRead[j],
-                                            rust::waveshaper::Function::HypTan,
-                                            saturationParam.get() * 5);
+        xn = rust::waveshaper::process(xn, rust::waveshaper::Function::HypTan,
+                                       saturationParam.get() * 5);
+
+        // Modulated Delay
+        xn = _modDelay[i]->process(xn);
 
         // LPF
         xn = rust::iir::process(_filters[i], xn);
 
-        // Modulated Delay
-        channelWrite[j] = _modDelay[i]->process(xn);
+        channelWrite[j] = xn;
       }
     }
   }

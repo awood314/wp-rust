@@ -17,10 +17,10 @@ private:
   WPRustProcessor &audioProcessor() const;
 
   Knob _saturation;
-  Knob _frequency;
   Knob _rate;
   Knob _depth;
   Knob _feedback;
+  Knob _frequency;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WPRustProcessorEditor)
 };
