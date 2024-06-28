@@ -9,26 +9,12 @@ namespace wprust {
 
 //==============================================================================
 WPRustProcessorEditor::WPRustProcessorEditor(WPRustProcessor &p)
-    : AudioProcessorEditor(&p),
-      _frequencyAttachment(p.frequencyParam, _frequencyKnob),
-      _rateAttachment(p.rateParam, _rateKnob),
-      _depthAttachment(p.depthParam, _depthKnob),
-      _feedbackAttachment(p.feedbackParam, _feedbackKnob) {
-  // _frequencyKnob.setSliderStyle(juce::Slider::Rotary);
-  // _frequencyKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
-  // addAndMakeVisible(_frequencyKnob);
+    : AudioProcessorEditor(&p), _saturation(p.saturationParam),
+      _rate(p.rateParam), _depth(p.depthParam), _feedback(p.feedbackParam) {
 
-  _rateKnob.setSliderStyle(juce::Slider::Rotary);
-  _rateKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
-  addAndMakeVisible(_rateKnob);
-
-  _depthKnob.setSliderStyle(juce::Slider::Rotary);
-  _depthKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
-  addAndMakeVisible(_depthKnob);
-
-  _feedbackKnob.setSliderStyle(juce::Slider::Rotary);
-  _feedbackKnob.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
-  addAndMakeVisible(_feedbackKnob);
+  for (auto *knob : {&_saturation, &_rate, &_depth, &_feedback}) {
+    addAndMakeVisible(*knob);
+  }
 
   setResizable(true, true);
   setSize(600, 200);
@@ -42,10 +28,9 @@ void WPRustProcessorEditor::resized() {
   juce::FlexBox flexbox;
   flexbox.flexDirection = juce::FlexBox::Direction::row;
   flexbox.justifyContent = juce::FlexBox::JustifyContent::spaceAround;
-
-  flexbox.items.add(juce::FlexItem(_rateKnob).withFlex(1.0f));
-  flexbox.items.add(juce::FlexItem(_depthKnob).withFlex(1.0f));
-  flexbox.items.add(juce::FlexItem(_feedbackKnob).withFlex(1.0f));
+  for (auto *knob : {&_saturation, &_rate, &_depth, &_feedback}) {
+    flexbox.items.add(juce::FlexItem(*knob).withFlex(1.0f));
+  }
 
   flexbox.performLayout(getLocalBounds());
 }

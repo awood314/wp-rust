@@ -3,6 +3,7 @@
 #include "PluginEditor.h"
 #include "PluginProcessor.h"
 #include "iir_filter.rs.h"
+#include "waveshaper.rs.h"
 
 namespace wprust {
 
@@ -118,7 +119,10 @@ void WPRustProcessor::processBlock(juce::AudioBuffer<float> &audioBuffer,
       const auto &channelRead = audioBuffer.getReadPointer(i);
       const auto &channelWrite = audioBuffer.getWritePointer(i);
       for (int j = 0; j < audioBuffer.getNumSamples(); j++) {
-        channelWrite[j] = _modDelay[i]->process(channelRead[j]);
+        auto xn = rust::waveshaper::process(channelRead[j],
+                                            rust::waveshaper::Function::HypTan,
+                                            saturationParam.get() * 5);
+        channelWrite[j] = _modDelay[i]->process(xn);
       }
     }
   }

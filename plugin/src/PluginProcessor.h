@@ -42,6 +42,9 @@ public:
   void getStateInformation(juce::MemoryBlock &destData) override;
   void setStateInformation(const void *data, int sizeInBytes) override;
 
+  juce::AudioParameterFloat saturationParam{
+      "saturation", "Saturation", {0.f, 1.f}, 0.f};
+
   juce::AudioParameterFloat frequencyParam{
       "frequency", "Frequency", {20.f, 20480.f}, 1000.f};
 

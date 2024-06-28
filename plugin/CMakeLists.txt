@@ -24,6 +24,8 @@ juce_add_plugin(${PROJECT_NAME}
     COPY_PLUGIN_AFTER_BUILD TRUE)
 
 set(TARGET_SOURCES
+    src/Knob.cpp
+    src/Knob.h
     src/PluginProcessor.cpp
     src/PluginProcessor.h
     src/PluginEditor.cpp

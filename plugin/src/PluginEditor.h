@@ -1,8 +1,6 @@
 #pragma once
 
-#include <juce_audio_processors/juce_audio_processors.h>
-#include <juce_gui_extra/juce_gui_extra.h>
-
+#include "Knob.h"
 #include "PluginProcessor.h"
 
 namespace wprust {
@@ -18,15 +16,10 @@ public:
 private:
   WPRustProcessor &audioProcessor() const;
 
-  juce::Slider _frequencyKnob;
-  juce::SliderParameterAttachment _frequencyAttachment;
-
-  juce::Slider _rateKnob;
-  juce::SliderParameterAttachment _rateAttachment;
-  juce::Slider _depthKnob;
-  juce::SliderParameterAttachment _depthAttachment;
-  juce::Slider _feedbackKnob;
-  juce::SliderParameterAttachment _feedbackAttachment;
+  Knob _saturation;
+  Knob _rate;
+  Knob _depth;
+  Knob _feedback;
 
   JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(WPRustProcessorEditor)
 };
