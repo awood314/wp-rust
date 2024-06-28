@@ -1,4 +1,6 @@
-use num_traits::Float;
+use std::ops::Div;
+
+use num_traits::{Float, ToPrimitive};
 
 use crate::util::linear_interpolation;
 
@@ -15,7 +17,7 @@ impl<T: Float> CircularBuffer<T> {
         self.write_index = 0;
 
         // nearest power of 2
-        self.length = length.ilog2().div_ceil(2_u32.ilog2()).pow(2) as usize;
+        self.length = 2_usize.pow((length as f64).log10().div(2.0.log10()).ceil() as u32);
 
         self.mask = self.length.wrapping_sub(1);
         self.buffer.resize(self.length, T::from(0.0).unwrap());

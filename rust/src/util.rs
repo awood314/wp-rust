@@ -23,8 +23,7 @@ pub fn bipolar_modulation_from_min(value: f64, min: f64, max: f64) -> f64 {
 }
 
 pub fn db_to_scalar(db: f64) -> f64 {
-    const TEN: f64 = 10.0;
-    TEN.powf(db / 20.0)
+    10.0.powf(db / 20.0)
 }
 
 pub fn linear_interpolation<T: Float>(y1: T, y2: T, fraction: T) -> T {
