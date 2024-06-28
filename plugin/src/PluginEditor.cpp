@@ -10,9 +10,10 @@ namespace wprust {
 //==============================================================================
 WPRustProcessorEditor::WPRustProcessorEditor(WPRustProcessor &p)
     : AudioProcessorEditor(&p), _saturation(p.saturationParam),
-      _rate(p.rateParam), _depth(p.depthParam), _feedback(p.feedbackParam) {
+      _frequency(p.frequencyParam), _rate(p.rateParam), _depth(p.depthParam),
+      _feedback(p.feedbackParam) {
 
-  for (auto *knob : {&_saturation, &_rate, &_depth, &_feedback}) {
+  for (auto *knob : {&_saturation, &_frequency, &_rate, &_depth, &_feedback}) {
     addAndMakeVisible(*knob);
   }
 
@@ -28,7 +29,7 @@ void WPRustProcessorEditor::resized() {
   juce::FlexBox flexbox;
   flexbox.flexDirection = juce::FlexBox::Direction::row;
   flexbox.justifyContent = juce::FlexBox::JustifyContent::spaceAround;
-  for (auto *knob : {&_saturation, &_rate, &_depth, &_feedback}) {
+  for (auto *knob : {&_saturation, &_frequency, &_rate, &_depth, &_feedback}) {
     flexbox.items.add(juce::FlexItem(*knob).withFlex(1.0f));
   }
 

@@ -67,8 +67,8 @@ const juce::String WPRustProcessor::getProgramName(int) { return {}; }
 void WPRustProcessor::changeProgramName(int, const juce::String &) {}
 
 void WPRustProcessor::prepareToPlay(double sampleRate, int) {
-  // rust::iir::reset(_filters[0], sampleRate);
-  // rust::iir::reset(_filters[1], sampleRate);
+  rust::iir::reset(_filters[0], sampleRate);
+  rust::iir::reset(_filters[1], sampleRate);
 
   _modDelay[0]->reset(sampleRate);
   _modDelay[1]->reset(sampleRate);
@@ -112,6 +112,7 @@ void WPRustProcessor::processBlock(juce::AudioBuffer<float> &audioBuffer,
   for (int i = 0; i < audioBuffer.getNumChannels(); i++) {
     if (i < 2) {
       // set parameters
+      rust::iir::set_parameters(_filters[i], {frequencyParam.get()});
       _modDelay[i]->set_parameters({.depth_pct = depthParam.get(),
                                     .feedback = feedbackParam.get(),
                                     .rate = rateParam.get()});
@@ -119,9 +120,15 @@ void WPRustProcessor::processBlock(juce::AudioBuffer<float> &audioBuffer,
       const auto &channelRead = audioBuffer.getReadPointer(i);
       const auto &channelWrite = audioBuffer.getWritePointer(i);
       for (int j = 0; j < audioBuffer.getNumSamples(); j++) {
+        // Waveshaper
         auto xn = rust::waveshaper::process(channelRead[j],
                                             rust::waveshaper::Function::HypTan,
                                             saturationParam.get() * 5);
+
+        // LPF
+        xn = rust::iir::process(_filters[i], xn);
+
+        // Modulated Delay
         channelWrite[j] = _modDelay[i]->process(xn);
       }
     }

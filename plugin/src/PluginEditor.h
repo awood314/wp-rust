@@ -17,6 +17,7 @@ private:
   WPRustProcessor &audioProcessor() const;
 
   Knob _saturation;
+  Knob _frequency;
   Knob _rate;
   Knob _depth;
   Knob _feedback;
